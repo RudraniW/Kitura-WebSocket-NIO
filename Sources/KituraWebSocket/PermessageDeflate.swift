@@ -21,13 +21,15 @@ import NIO
 
 class PermessageDeflate: WebSocketProtocolExtension {
 
+    //TODO: change the defaults to false once context takover is supported
+    var clientNoContextTakeover = true
+    var serverNoContextTakeover = true
+
     // Returns the deflater and inflater, to be subsequently added to the channel pipeline
     func handlers(header: String) -> [ChannelHandler] {
         guard header.hasPrefix("permessage-deflate") else { return [] }
         var deflaterMaxWindowBits: Int32 = 15
         var inflaterMaxWindowBits: Int32 = 15
-        var clientNoContextTakeover = false
-        let serverNoContextTakeover = false //TODO: `let` for now, needs to be a `var` when we start handling this parameter
 
         // Four parameters to handle:
         // * server_max_window_bits: the LZ77 sliding window size used by the server for compression
@@ -57,14 +59,14 @@ class PermessageDeflate: WebSocketProtocolExtension {
                 }
             }
 
-            //TODO: If server_no_context_takeover was received, do we create new inflater/deflater objects?
-            if parameter == "client_no_context_takeover" {
-                clientNoContextTakeover = true
+            if parameter.hasPrefix("client_no_context_takeover") {
+                self.clientNoContextTakeover = true
+                self.serverNoContextTakeover = true
             }
         }
 
-        return [PermessageDeflateCompressor(maxWindowBits: deflaterMaxWindowBits, noContextTakeOver: serverNoContextTakeover),
-                   PermessageDeflateDecompressor(maxWindowBits: inflaterMaxWindowBits, noContextTakeOver: clientNoContextTakeover)]
+        return [PermessageDeflateCompressor(maxWindowBits: deflaterMaxWindowBits, noContextTakeOver: self.serverNoContextTakeover),
+                   PermessageDeflateDecompressor(maxWindowBits: inflaterMaxWindowBits, noContextTakeOver: self.clientNoContextTakeover)]
     }
 
     // Comprehend the Sec-WebSocket-Extensions request header and build a response header
@@ -77,9 +79,18 @@ class PermessageDeflate: WebSocketProtocolExtension {
 
         for parameter in header.components(separatedBy: "; ") {
             if parameter == "client_no_context_takeover" {
-                response.append("; \(parameter)")
+                self.clientNoContextTakeover = true
+                //TODO: include client_no_context_takeover in the response
+            }
+
+            if parameter == "server_no_context_takeover" {
+                self.serverNoContextTakeover = true
+                //TODO: include server_no_context_takeover in the response
             }
         }
+        //TODO: remove this after we have implemented context takeover
+        response.append("; server_no_context_takeover")
+        response.append("; client_no_context_takeover")
         return response
     }
 }
