@@ -24,9 +24,11 @@ class PermessageDeflate: WebSocketProtocolExtension {
     //TODO: change the defaults to false once context takover is supported
     var clientNoContextTakeover = true
     var serverNoContextTakeover = true
+    var negotiated = false
 
     // Returns the deflater and inflater, to be subsequently added to the channel pipeline
     func handlers(header: String) -> [ChannelHandler] {
+        guard negotiated else { return [] }
         guard header.hasPrefix("permessage-deflate") else { return [] }
         var deflaterMaxWindowBits: Int32 = 15
         var inflaterMaxWindowBits: Int32 = 15
@@ -58,11 +60,6 @@ class PermessageDeflate: WebSocketProtocolExtension {
                     }
                 }
             }
-
-            if parameter.hasPrefix("client_no_context_takeover") {
-                self.clientNoContextTakeover = true
-                self.serverNoContextTakeover = true
-            }
         }
 
         return [PermessageDeflateCompressor(maxWindowBits: deflaterMaxWindowBits, noContextTakeOver: self.serverNoContextTakeover),
@@ -72,6 +69,11 @@ class PermessageDeflate: WebSocketProtocolExtension {
     // Comprehend the Sec-WebSocket-Extensions request header and build a response header
     // In this context, the specification is not really very strict.
     func negotiate(header: String) -> String {
+
+        defer {
+            self.negotiated = true
+        }
+
         var response = "permessage-deflate"
 
         // This shouldn't be really possible. We reached here only because the header was used to fetch the PerMessageDeflate implementation.
