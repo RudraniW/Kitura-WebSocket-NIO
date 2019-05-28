@@ -36,6 +36,8 @@ class PermessageDeflateDecompressor : ChannelInboundHandler {
     // The zlib stream
     private var stream: z_stream = z_stream()
 
+    private var streamInitialized = false
+
     // A buffer to accumulate payload across multiple frames
     var payload: ByteBuffer?
 
@@ -82,17 +84,22 @@ class PermessageDeflateDecompressor : ChannelInboundHandler {
 
     func inflatePayload(in buffer: ByteBuffer, allocator: ByteBufferAllocator) -> ByteBuffer {
         // Initialize the inflater as per https://www.zlib.net/zlib_how.html
-        stream.zalloc = nil 
-        stream.zfree = nil 
-        stream.opaque = nil 
-        stream.avail_in = 0 
-        stream.next_in = nil 
-        let rc = inflateInit2_(&stream, -self.maxWindowBits, ZLIB_VERSION, Int32(MemoryLayout<z_stream>.size))
-        precondition(rc == Z_OK, "Unexpected return from zlib init: \(rc)")
+        if noContextTakeOver || streamInitialized == false {
+            stream.zalloc = nil
+            stream.zfree = nil
+            stream.opaque = nil
+            stream.avail_in = 0
+            stream.next_in = nil
+            let rc = inflateInit2_(&stream, -self.maxWindowBits, ZLIB_VERSION, Int32(MemoryLayout<z_stream>.size))
+            precondition(rc == Z_OK, "Unexpected return from zlib init: \(rc)")
+            self.streamInitialized = true
+        } else { print("Already initialized") }
 
         defer {
-            // Deinitialize before returning
-            inflateEnd(&stream)
+            if noContextTakeOver {
+                // Deinitialize before returning
+                inflateEnd(&stream)
+            }
         }
 
         // Inflate/decompress the payload
