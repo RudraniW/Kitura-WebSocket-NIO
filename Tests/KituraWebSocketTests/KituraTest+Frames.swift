@@ -202,6 +202,12 @@ class WebSocketClientHandler: ChannelInboundHandler {
     func channelRead(context: ChannelHandlerContext, data: NIOAny) {
         let buffer = self.unwrapInboundIn(data)
         decodeFrame(from: buffer)
+        count = count + 1
+        print("connection count is", count)
+    }
+    func channelActive(context: ChannelHandlerContext) {
+        count = count + 1
+        print("connection count is", count)
     }
     private func decodeFrame(from data: ByteBuffer) {
         var buffer = data
