@@ -280,6 +280,9 @@ extension WebSocketConnection: ChannelInboundHandler {
             connectionClosed(reason: .protocolError, description: "Frames must be smaller than the configured maximum acceptable frame size")
         }
     }
+    public func channelInactive(context: ChannelHandlerContext) {
+        service?.disconnected(connection: self, reason: WebSocketCloseReasonCode.noReasonCodeSent)
+    }
 
     private func unmaskedData(frame: WebSocketFrame) -> ByteBuffer {
        var frameData = frame.data
@@ -329,7 +332,6 @@ extension WebSocketConnection {
         }
         if context.channel.isWritable {
              closeConnection(reason: reasonToSendBack ?? reason, description: description, hard: true)
-             fireDisconnected(reason: reason)
         } else {
             context.close(promise: nil)
         }
