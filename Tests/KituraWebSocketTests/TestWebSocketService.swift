@@ -52,9 +52,10 @@ class TestWebSocketService: WebSocketService {
         }
     }
 
+    var connectClientId = [String]()
     public func connected(connection: WebSocketConnection) {
         connectionId = connection.id
-
+        connectClientId.append(connectionId)
         if let pingMessage = pingMessage {
             if pingMessage.count > 0 {
                 connection.ping(withMessage: pingMessage)
@@ -101,9 +102,12 @@ class TestWebSocketService: WebSocketService {
         }
     }
 
+    var disconnectClientId = [String]()
     public func disconnected(connection: WebSocketConnection, reason: WebSocketCloseReasonCode) {
-        XCTAssertEqual(connectionId, connection.id, "Client ID from connect wasn't client ID from disconnect")
-        XCTAssertEqual(Int(closeReason.code()), Int(reason.code()), "Expected close reason code \(closeReason) is not equal to received reason code\(reason)")
+        disconnectClientId.append(connection.id)
+        while disconnectClientId.count != connectClientId.count {}
+        XCTAssertEqual(connectClientId.sorted(), disconnectClientId.sorted(), "Client IDs from connect weren't client IDs from disconnect")
+        XCTAssertEqual(Int(closeReason.code()), Int(reason.code()), "Expected close reason code of \(closeReason) received \(reason)")
     }
 
     public func received(message: Data, from: WebSocketConnection) {

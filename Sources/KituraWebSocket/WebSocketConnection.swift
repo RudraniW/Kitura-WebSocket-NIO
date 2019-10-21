@@ -281,7 +281,9 @@ extension WebSocketConnection: ChannelInboundHandler {
         }
     }
     public func channelInactive(context: ChannelHandlerContext) {
-        service?.disconnected(connection: self, reason: WebSocketCloseReasonCode.noReasonCodeSent)
+        if disconnectedCallbackFlag == false {
+            service?.disconnected(connection: self, reason: .noReasonCodeSent)
+        }
     }
 
     private func unmaskedData(frame: WebSocketFrame) -> ByteBuffer {
@@ -323,15 +325,16 @@ extension WebSocketConnection: ChannelInboundHandler {
         return true
     }
 }
-
+public var disconnectedCallbackFlag = false
 extension WebSocketConnection {
-
     func connectionClosed(reason: WebSocketErrorCode, description: String? = nil, reasonToSendBack: WebSocketErrorCode? = nil) {
         guard let context = context else {
              return
         }
         if context.channel.isWritable {
              closeConnection(reason: reasonToSendBack ?? reason, description: description, hard: true)
+            fireDisconnected(reason: reason)
+            disconnectedCallbackFlag = true
         } else {
             context.close(promise: nil)
         }
