@@ -25,9 +25,7 @@ import NIOWebSocket
 import Foundation
 import Dispatch
 
-class KituraTest: XCTestCase{
-//    public var connectClientId = [String]()
-//    public var disconnectClientId = [String]()
+class KituraTest: XCTestCase {
     private static let initOnce: () = {
         PrintLogger.use(colored: true)
     }()
