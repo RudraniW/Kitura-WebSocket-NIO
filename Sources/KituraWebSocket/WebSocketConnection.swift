@@ -50,7 +50,7 @@ public class WebSocketConnection {
     
     private var errors : [String] = []
 
-    private var disconnectedFired = Atomic(value: false)
+    private var disconnectedFired: Bool = false
 
     init(request: ServerRequest, service: WebSocketService? = nil) {
         self.request = request
@@ -284,9 +284,9 @@ extension WebSocketConnection: ChannelInboundHandler {
         }
     }
     public func channelInactive(context: ChannelHandlerContext) {
-        if disconnectedFired.compareAndExchange(expected: false, desired: false) {
+        if disconnectedFired == false {
             service?.disconnected(connection: self, reason: .noReasonCodeSent)
-            disconnectedFired = Atomic(value: true)
+            disconnectedFired = true
         }
     }
 
@@ -337,7 +337,7 @@ extension WebSocketConnection {
         if context.channel.isWritable {
              closeConnection(reason: reasonToSendBack ?? reason, description: description, hard: true)
             fireDisconnected(reason: reason)
-            disconnectedFired = Atomic(value: true)
+            disconnectedFired = true
         } else {
             context.close(promise: nil)
         }
