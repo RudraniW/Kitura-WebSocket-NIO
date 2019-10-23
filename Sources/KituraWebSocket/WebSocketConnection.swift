@@ -335,9 +335,11 @@ extension WebSocketConnection {
              return
         }
         if context.channel.isWritable {
-             closeConnection(reason: reasonToSendBack ?? reason, description: description, hard: true)
-            fireDisconnected(reason: reason)
-            disconnectedFired = true
+            closeConnection(reason: reasonToSendBack ?? reason, description: description, hard: true)
+            if disconnectedFired == false {
+                fireDisconnected(reason: reason)
+                disconnectedFired = true
+            }
         } else {
             context.close(promise: nil)
         }
