@@ -9,9 +9,9 @@ import LoggerAPI
 @testable import KituraWebSocket
 import Socket
 
-class connectionsTests: KituraTest{
+class ConnectionTests: KituraTest {
 
-    static var allTests: [(String, (connectionsTests) -> () throws -> Void)] {
+    static var allTests: [(String, (ConnectionTests) -> () throws -> Void)] {
         return [
             ("testDisconnectCallback", testDisconnectCallback)
         ]

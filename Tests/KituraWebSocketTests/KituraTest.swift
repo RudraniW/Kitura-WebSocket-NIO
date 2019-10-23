@@ -26,6 +26,7 @@ import Foundation
 import Dispatch
 
 class KituraTest: XCTestCase {
+
     private static let initOnce: () = {
         PrintLogger.use(colored: true)
     }()

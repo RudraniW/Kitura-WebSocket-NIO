@@ -50,6 +50,8 @@ public class WebSocketConnection {
     
     private var errors : [String] = []
 
+    private var disconnectedFired = Atomic(value: false)
+
     init(request: ServerRequest, service: WebSocketService? = nil) {
         self.request = request
         self.connectionTimeout = service?.connectionTimeout
@@ -327,7 +329,6 @@ extension WebSocketConnection: ChannelInboundHandler {
         return true
     }
 }
-public var disconnectedFired = Atomic(value: false)
 extension WebSocketConnection {
     func connectionClosed(reason: WebSocketErrorCode, description: String? = nil, reasonToSendBack: WebSocketErrorCode? = nil) {
         guard let context = context else {
