@@ -198,12 +198,9 @@ class WebSocketClientHandler: ChannelInboundHandler {
         self.expectation = expectation
         self.compressed = compressed
     }
-    var count = 0
     func channelRead(context: ChannelHandlerContext, data: NIOAny) {
         let buffer = self.unwrapInboundIn(data)
         decodeFrame(from: buffer)
-    }
-    func channelActive(context: ChannelHandlerContext) {
     }
     private func decodeFrame(from data: ByteBuffer) {
         var buffer = data

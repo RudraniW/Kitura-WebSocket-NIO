@@ -20,6 +20,7 @@ import NIOWebSocket
 import Foundation
 import NIOHTTP1
 import LoggerAPI
+import NIOConcurrencyHelpers
 
 public class WebSocketConnection {
 
@@ -281,8 +282,9 @@ extension WebSocketConnection: ChannelInboundHandler {
         }
     }
     public func channelInactive(context: ChannelHandlerContext) {
-        if disconnectedCallbackFlag == false {
+        if disconnectedFired.compareAndExchange(expected: false, desired: false) {
             service?.disconnected(connection: self, reason: .noReasonCodeSent)
+            disconnectedFired = Atomic(value: true)
         }
     }
 
@@ -325,7 +327,7 @@ extension WebSocketConnection: ChannelInboundHandler {
         return true
     }
 }
-public var disconnectedCallbackFlag = false
+public var disconnectedFired = Atomic(value: false)
 extension WebSocketConnection {
     func connectionClosed(reason: WebSocketErrorCode, description: String? = nil, reasonToSendBack: WebSocketErrorCode? = nil) {
         guard let context = context else {
@@ -334,7 +336,7 @@ extension WebSocketConnection {
         if context.channel.isWritable {
              closeConnection(reason: reasonToSendBack ?? reason, description: description, hard: true)
             fireDisconnected(reason: reason)
-            disconnectedCallbackFlag = true
+            disconnectedFired = Atomic(value: true)
         } else {
             context.close(promise: nil)
         }

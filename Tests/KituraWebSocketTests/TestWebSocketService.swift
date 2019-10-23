@@ -52,7 +52,7 @@ class TestWebSocketService: WebSocketService {
         }
     }
 
-    var connectClientId = [String]()
+    public var connectClientId = [String]()
     public func connected(connection: WebSocketConnection) {
         connectionId = connection.id
         connectClientId.append(connectionId)
@@ -102,11 +102,11 @@ class TestWebSocketService: WebSocketService {
         }
     }
 
-    var disconnectClientId = [String]()
+    public var disconnectClientId = [String]()
     public func disconnected(connection: WebSocketConnection, reason: WebSocketCloseReasonCode) {
         disconnectClientId.append(connection.id)
-        while disconnectClientId.count != connectClientId.count {}
-        XCTAssertEqual(connectClientId.sorted(), disconnectClientId.sorted(), "Client IDs from connect weren't client IDs from disconnect")
+//        while disconnectClientId.count != connectClientId.count {}
+//        XCTAssertEqual(connectClientId.sorted(),disconnectClientId.sorted(), "Client IDs from connect weren't client IDs from disconnect")
         XCTAssertEqual(Int(closeReason.code()), Int(reason.code()), "Expected close reason code of \(closeReason) received \(reason)")
     }
 
@@ -133,9 +133,9 @@ class TestWebSocketService: WebSocketService {
     }
 }
 
-extension TestWebSocketService: CustomStringConvertible {
-    /// Generate a printable version of this enum.
-    public var description: String {
-        return "TestWebSocketService(closeReason: \(closeReason))"
-    }
-}
+//extension TestWebSocketService: CustomStringConvertible {
+//    /// Generate a printable version of this enum.
+//    public var description: String {
+//        return "TestWebSocketService(closeReason: \(closeReason))"
+//    }
+//}

@@ -296,7 +296,7 @@ class WebSocketClient {
     // Stored callbacks
     var onOpenCallback: (Channel) -> Void = {_ in }
 
-    var onCloseCallback: (Channel, ByteBuffer) -> Void = { _,_ in }
+    var onCloseCallback: (Channel, ByteBuffer) -> Void = { _,_ in print("check")}
 
     var onMessageCallback: (ByteBuffer) -> Void = { _ in }
 
