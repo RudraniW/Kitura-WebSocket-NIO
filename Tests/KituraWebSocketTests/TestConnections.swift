@@ -24,8 +24,10 @@ class ConnectionTests: KituraTest {
                 guard let client = WebSocketClient(host: "localhost", port:8080 , uri: self.servicePath, requestKey: self.secWebKey) else { return }
                 client.connect()
                 client.onClose { channel, _ in
-                    guard service.disconnectClientId.count == 100 else { return }
-                    XCTAssertEqual(service.connectClientId.sorted(),service.disconnectClientId.sorted(), "Client IDs from connect weren't client IDs from disconnect")
+                    service.queue.sync {
+                        guard service.disconnectClientId.count == 100 else { return }
+                    }
+                        XCTAssertEqual(service.connectClientId.sorted(),service.disconnectClientId.sorted(), "Client IDs from connect weren't client IDs from disconnect")
                     expectation.fulfill()
                 }
                 client.close()
